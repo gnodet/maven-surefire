@@ -393,6 +393,7 @@
                 <compilerArgs>
                   <!-- FIXME: maven-plugin-plugin therefore used -syntax or none due to HelpMojo -->
                   <arg>-Xdoclint:none</arg>
+                  <arg>-XFoobar</arg>
                 </compilerArgs>
               </configuration>
             </execution>
@@ -409,6 +410,7 @@
                 </excludes>
                 <compilerArgs>
                   <arg>-Xdoclint:all</arg>
+                  <arg>-XFoobar</arg>
                 </compilerArgs>
               </configuration>
             </execution>
