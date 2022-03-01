@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.junit;
+package org.apache.maven.surefire.api.report;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,14 +19,14 @@ package org.apache.maven.surefire.junit;
  * under the License.
  */
 
-import org.apache.maven.surefire.api.testset.TestSetFailedException;
-
 /**
- * Describes a single test set
  *
  */
-public interface SurefireTestSetExecutor
+public interface OutputReportEntry
 {
-    void execute( Class<?> testClass, ClassLoader loader )
-        throws TestSetFailedException;
+    String getLog();
+
+    boolean isStdOut();
+
+    boolean isNewLine();
 }
