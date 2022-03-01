@@ -31,7 +31,10 @@ import org.apache.maven.surefire.report.ClassMethodIndexer;
 import org.apache.maven.surefire.report.RunModeSetter;
 
 /**
- *
+ * This implementation of {@link RunListener} handles {@link OutputReportEntry} in the
+ * {@link TestOutputReceiver output receiver}, downcasting to {@link TestOutputReportEntry}, and
+ * delegates the report entry to the {@link TestReportListener}.
+ * This object necessarily requires setting the {@link RunMode} in order to behave properly.
  */
 final class JUnit3Reporter
     implements RunListener, TestOutputReceiver<OutputReportEntry>, RunModeSetter

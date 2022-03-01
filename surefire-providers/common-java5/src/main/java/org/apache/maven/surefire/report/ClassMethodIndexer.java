@@ -28,7 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.Objects.requireNonNull;
 
 /**
- *
+ * Creates an index for class/method.
+ * Returns ThreadLocal index if created before.
  */
 public final class ClassMethodIndexer
 {

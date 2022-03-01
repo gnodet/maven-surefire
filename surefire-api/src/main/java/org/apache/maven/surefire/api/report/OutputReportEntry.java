@@ -20,7 +20,20 @@ package org.apache.maven.surefire.api.report;
  */
 
 /**
- *
+ * Minimum data requirement for report entry.
+ * <br>
+ * Additionally, we should distinguish between two events ({@link OutputReportEntry}, {@link TestOutputReportEntry}).
+ * The interface {@link TestReportListener} handles these two events via generics depending on the situation.
+ * <br>
+ * The first situation happens when provider's listeners handles the event {@link OutputReportEntry} from
+ * <i>System.out</i> and <i>System.err</i> via the {@link ConsoleOutputCapture}. The {@link ConsoleOutputCapture} does
+ * not have any notion about {@link RunMode} and <code>testRunId</code>, and therefore the only provider's listener
+ * would add {@link RunMode} and <code>testRunId</code> to a recreated entry which would be finally propagated to the
+ * <code>ForkingRunListener</code> and <code>TestSetRunListener</code>. The {@link RunMode} and <code>testRunId</code>
+ * are determined upon the events test-started, test-finished and Thread local.
+ * <br>
+ * The second situation happens when <code>ForkingRunListener</code> and <code>TestSetRunListener</code> handles
+ * {@link TestOutputReportEntry} which contains {@link RunMode} and <code>testRunId</code>.
  */
 public interface OutputReportEntry
 {

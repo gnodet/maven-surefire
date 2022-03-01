@@ -279,7 +279,7 @@ public class ForkingRunListenerTest
 
         MockReporter reporter = (MockReporter) forkStreamClient.getReporter();
         assertThat( reporter.getFirstEvent() ).isEqualTo( MockReporter.TEST_STARTING );
-        //assertThat( reporter.getFirstData() ).isEqualTo( expected ); /*toto uncomment in SUREFIRE-2014*/
+        //assertThat( reporter.getFirstData() ).isEqualTo( expected ); /*todo uncomment in SUREFIRE-2014*/
         assertThat( reporter.getEvents() ).hasSize( 1 );
 
         forkStreamClient = new ForkClient( providerReporterFactory, notifiableTestStream, 2 );
@@ -289,7 +289,7 @@ public class ForkingRunListenerTest
         }
         MockReporter reporter2 = (MockReporter) forkStreamClient.getReporter();
         assertThat( reporter2.getFirstEvent() ).isEqualTo( MockReporter.TEST_SKIPPED );
-        //assertThat( reporter2.getFirstData() ).isEqualTo( secondExpected ); /*toto uncomment in SUREFIRE-2014*/
+        //assertThat( reporter2.getFirstData() ).isEqualTo( secondExpected ); /*todo uncomment in SUREFIRE-2014*/
         assertThat( reporter2.getEvents() ).hasSize( 1 );
     }
 

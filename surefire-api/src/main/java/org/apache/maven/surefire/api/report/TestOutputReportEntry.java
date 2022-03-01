@@ -21,6 +21,8 @@ package org.apache.maven.surefire.api.report;
 
 /**
  * This report entry should be used in {@link TestOutputReceiver#writeTestOutput(OutputReportEntry)}.
+ *
+ * {@inheritDoc}
  */
 public final class TestOutputReportEntry implements OutputReportEntry
 {
