@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
@@ -40,7 +39,6 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
-import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 
 /**
  * Reports data for a single test set.
@@ -72,8 +70,6 @@ public class TestSetRunListener
     private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred( "stdout" );
 
     private Utf8RecodingDeferredFileOutputStream testStdErr = initDeferred( "stderr" );
-
-    private volatile RunMode runMode = NORMAL_RUN;
 
     @SuppressWarnings( "checkstyle:parameternumber" )
     public TestSetRunListener( StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats>
