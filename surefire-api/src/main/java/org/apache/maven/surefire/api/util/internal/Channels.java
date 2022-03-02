@@ -26,6 +26,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
 import java.nio.channels.ClosedChannelException;
@@ -214,7 +215,7 @@ public final class Channels
                 int count = bis.read( src.array(), src.arrayOffset() + src.position(), src.remaining() );
                 if ( count > 0 )
                 {
-                    src.position( count + src.position() );
+                    ( (Buffer) src ).position( count + src.position() );
                 }
                 return count;
             }

@@ -28,6 +28,7 @@ import org.apache.maven.surefire.api.util.internal.ImmutableMap;
 import javax.annotation.Nonnull;
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
@@ -79,9 +80,9 @@ public class LegacyMasterProcessChannelDecoder implements MasterProcessChannelDe
             FrameCompletion completion = null;
             for ( boolean frameStarted = false; !( endOfStream = channel.read( buffer ) == -1 ) ; completion = null )
             {
-                buffer.flip();
+                ( (Buffer) buffer ).flip();
                 char c = (char) buffer.get();
-                buffer.clear();
+                ( (Buffer) buffer ).clear();
 
                 if ( !frameStarted )
                 {

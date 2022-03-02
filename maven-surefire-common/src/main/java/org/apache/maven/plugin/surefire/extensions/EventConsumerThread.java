@@ -56,6 +56,7 @@ import org.apache.maven.surefire.shared.codec.binary.Base64;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
@@ -137,7 +138,7 @@ public class EventConsumerThread extends CloseableDaemonThread
         StringBuilder line = new StringBuilder();
         StringBuilder token = new StringBuilder( MAGIC_NUMBER.length() );
         ByteBuffer buffer = ByteBuffer.allocate( 1024 );
-        buffer.position( buffer.limit() );
+        ( (Buffer) buffer ).position( buffer.limit() );
         boolean streamContinues;
 
         start:
@@ -219,9 +220,9 @@ public class EventConsumerThread extends CloseableDaemonThread
         }
         else
         {
-            buffer.clear();
+            ( (Buffer) buffer ).clear();
             boolean isEndOfStream = channel.read( buffer ) == -1;
-            buffer.flip();
+            ( (Buffer) buffer ).flip();
             return !isEndOfStream;
         }
     }
