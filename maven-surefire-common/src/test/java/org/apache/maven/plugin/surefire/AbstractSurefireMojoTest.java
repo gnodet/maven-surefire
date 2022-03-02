@@ -30,14 +30,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
@@ -84,6 +87,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import static java.io.File.separatorChar;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -95,8 +99,8 @@ import static org.apache.maven.artifact.versioning.VersionRange.createFromVersio
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.codehaus.plexus.languages.java.jpms.ModuleNameSource.MODULEDESCRIPTOR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.codehaus.plexus.languages.java.jpms.ModuleNameSource.MODULEDESCRIPTOR;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -1990,11 +1994,27 @@ public class AbstractSurefireMojoTest
         private int failOnFlakeCount;
         private String[] includeJUnit5Engines;
         private String[] excludeJUnit5Engines;
+        private List<Artifact> projectTestArtifacts;
+        private File includesFile;
+        private File excludesFile;
+        private List<String> includes;
+        private List<String> excludes;
 
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo( Artifact junitPlatformArtifact,
                                                                            TestClassPath testClasspathWrapper )
         {
             return new JUnitPlatformProviderInfo( junitPlatformArtifact, testClasspathWrapper );
+        }
+
+        void setProjectTestArtifacts( List<Artifact> projectTestArtifacts )
+        {
+            this.projectTestArtifacts = projectTestArtifacts;
+        }
+
+        @Override
+        List<Artifact> getProjectTestArtifacts()
+        {
+            return projectTestArtifacts;
         }
 
         @Override
@@ -2126,19 +2146,24 @@ public class AbstractSurefireMojoTest
         @Override
         public List<String> getIncludes()
         {
-            return null;
+            return includes;
+        }
+
+        void setIncludesFile( File includesFile )
+        {
+            this.includesFile = includesFile;
         }
 
         @Override
         public File getIncludesFile()
         {
-            return null;
+            return includesFile;
         }
 
         @Override
         public void setIncludes( List<String> includes )
         {
-
+            this.includes = includes;
         }
 
         @Override
@@ -2297,10 +2322,15 @@ public class AbstractSurefireMojoTest
             return null;
         }
 
+        void setExcludesFile( File excludesFile )
+        {
+            this.excludesFile = excludesFile;
+        }
+
         @Override
         public File getExcludesFile()
         {
-            return null;
+            return excludesFile;
         }
 
         @Override
@@ -2469,6 +2499,71 @@ public class AbstractSurefireMojoTest
         {
             this.excludeJUnit5Engines = excludeJUnit5Engines;
         }
+    }
+
+    @Test
+    public void shouldNotPerformMethodFilteringOnIncludes() throws Exception
+    {
+        Mojo plugin = new Mojo();
+
+        File includesExcludes = File.createTempFile( "surefire", "-includes" );
+        FileUtils.write( includesExcludes, "AnotherTest#method" , UTF_8 );
+        plugin.setIncludesFile( includesExcludes );
+
+        List<String> includes = new LinkedList<>();
+        includes.add( "AnotherTest#method " );
+        plugin.setIncludes( includes );
+
+        VersionRange version = VersionRange.createFromVersion( "1.0" );
+        ArtifactHandler handler = new DefaultArtifactHandler();
+        Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "jar", null, handler );
+        File artifactFile = File.createTempFile( "surefire", ".jar" );
+        artifactFile.deleteOnExit();
+        testDeps.setFile( artifactFile );
+        plugin.setProjectTestArtifacts( singletonList( testDeps ) );
+        plugin.setDependenciesToScan( new String[] { "g:a" } );
+
+        try
+        {
+            plugin.scanDependencies();
+            fail( "MojoFailureException expected" );
+        }
+        catch ( MojoFailureException e )
+        {
+            assertThat( e.getLocalizedMessage() )
+                .isEqualTo( "Method filter prohibited in includes|excludes parameter: AnotherTest#method " );
+        }
+    }
+
+    @Test
+    public void shouldPerformMethodFilteringOnIncludesExcludesFile() throws Exception
+    {
+        Mojo plugin = new Mojo();
+
+        plugin.setLogger( mock( Logger.class ) );
+
+        File includesExcludes = File.createTempFile( "surefire", "-includes" );
+        FileUtils.write( includesExcludes, "AnotherTest#method" , UTF_8 );
+        plugin.setIncludesFile( includesExcludes );
+        plugin.setExcludesFile( includesExcludes );
+
+        VersionRange version = VersionRange.createFromVersion( "1.0" );
+        ArtifactHandler handler = new DefaultArtifactHandler();
+        Artifact testDeps = new DefaultArtifact( "g", "a", version, "compile", "test-jar", null, handler );
+        File artifactFile = File.createTempFile( "surefire", "-classes" );
+        String classDir = artifactFile.getCanonicalPath();
+        assertThat( artifactFile.delete() ).isTrue();
+        File classes = new File( classDir );
+        assertThat( classes.mkdir() ).isTrue();
+        testDeps.setFile( classes );
+        assertThat( new File( classes, "AnotherTest.class" ).createNewFile() )
+            .isTrue();
+        plugin.setProjectTestArtifacts( singletonList( testDeps ) );
+        plugin.setDependenciesToScan( new String[] { "g:a" } );
+
+        DefaultScanResult result = plugin.scanDependencies();
+        assertThat ( result.getClasses() ).hasSize( 1 );
+        assertThat ( result.getClasses().iterator().next() ).isEqualTo( "AnotherTest" );
     }
 
     private static File mockFile( String absolutePath )
